@@ -1,7 +1,7 @@
 import os
 import sys
 import re
-import base64
+import hashlib
 from bs4 import BeautifulSoup
 
 def load_html(path="index.html"):
@@ -111,11 +111,11 @@ def check_image_hash():
         print(f"❌ Image file '{expected_name}' not found.")
         sys.exit(1)
 
-    actual_hash = base64.b64encode(image_bytes).decode("utf-8")
+    actual_hash = hashlib.sha256(image_bytes).hexdigest()
     if actual_hash == expected_hash:
-        print("✅ Image base64 content matches.")
+        print("✅ Image SHA-256 hash matches.")
     else:
-        print("❌ Image content hash does not match expected value.")
+        print(f"❌ Image content hash does not match.\nExpected: {expected_hash}\nFound:    {actual_hash}")
         sys.exit(1)
 
 # === PR Message Placeholder ===
