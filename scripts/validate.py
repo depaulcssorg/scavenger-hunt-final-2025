@@ -1,6 +1,7 @@
 import os
 import sys
 import re
+import hashlib
 from bs4 import BeautifulSoup
 
 def load_html(path="index.html"):
@@ -11,12 +12,13 @@ def load_html(path="index.html"):
         print("❌ index.html not found.")
         sys.exit(1)
 
+# === Background Color ===
 def check_background_color():
     soup = load_html()
     expected_color = os.environ["BACKGROUND_COLOR"]
     style_tags = soup.find_all("style")
     for style in style_tags:
-        match = re.search(r'background-color:\s*(#[0-9a-fA-F]{6})', style.text)
+        match = re.search(r'background(?:-color)?:\s*(#[0-9a-fA-F]{6})', style.text)
         if match:
             found = match.group(1)
             if found.lower() == expected_color.lower():
@@ -28,48 +30,105 @@ def check_background_color():
     print("❌ No background color found in <style> tags.")
     sys.exit(1)
 
+# === Header Text ===
 def check_header_text():
     soup = load_html()
     expected_text = os.environ["HEADER_TEXT"]
+
     headers = soup.find_all(re.compile(r'h[1-6]'))
     for header in headers:
         if header.get_text(strip=True) == expected_text:
             print("✅ Header text matches.")
-            # Save the tag name for use in header size
-            with open(".header_tag", "w") as f:
-                f.write(header.name)
             return
+
     print("❌ Header text not found.")
     sys.exit(1)
 
+# === Header Size ===
 def check_header_size():
+    soup = load_html()
+    expected_text = os.environ["HEADER_TEXT"]
     expected_size = int(os.environ["HEADER_SIZE"])
-    try:
-        with open(".header_tag", "r") as f:
-            tag_name = f.read().strip()
-    except FileNotFoundError:
-        print("❌ Header tag context missing. Run check-header-text first.")
-        sys.exit(1)
 
-    level = int(tag_name[1]) if tag_name.startswith("h") else None
-    if level == expected_size:
-        print("✅ Header size matches.")
+    headers = soup.find_all(re.compile(r'h[1-6]'))
+    for header in headers:
+        if header.get_text(strip=True) == expected_text:
+            actual_size = int(header.name[1])
+            if actual_size == expected_size:
+                print("✅ Header size matches.")
+                return
+            else:
+                print(f"❌ Header size mismatch. Found: h{actual_size}")
+                sys.exit(1)
+
+    print("❌ Header text not found.")
+    sys.exit(1)
+
+# === Image Utilities ===
+def find_img_tag_by_name(soup, expected_name):
+    return soup.find("img", {"src": expected_name})
+
+# === Image Name ===
+def check_image_name():
+    soup = load_html()
+    expected_name = os.environ["IMAGE_NAME"]
+
+    img_tag = find_img_tag_by_name(soup, expected_name)
+    if img_tag:
+        print("✅ Image tag with correct name found.")
     else:
-        print(f"❌ Header size mismatch. Found: h{level}")
+        print(f"❌ No <img> tag with src='{expected_name}' found.")
         sys.exit(1)
 
-def check_image_tag():
-    print("TODO: Implement image tag validation.")
-    sys.exit(0)
+# === Image Link ===
+def check_image_link():
+    soup = load_html()
+    expected_name = os.environ["IMAGE_NAME"]
+    expected_link = os.environ["LINK_URL"]
 
+    img_tag = find_img_tag_by_name(soup, expected_name)
+    if not img_tag:
+        print(f"❌ No <img> tag with src='{expected_name}' found.")
+        sys.exit(1)
+
+    parent = img_tag.find_parent("a", href=True)
+    if parent and parent["href"] == expected_link:
+        print("✅ Image is wrapped in correct link.")
+    else:
+        found = parent["href"] if parent else "none"
+        print(f"❌ Image link mismatch. Found: {found}")
+        sys.exit(1)
+
+# === Image Hash ===
+def check_image_hash():
+    expected_name = os.environ["IMAGE_NAME"]
+    expected_hash = os.environ["IMAGE_HASH"]
+
+    try:
+        with open(expected_name, "rb") as f:
+            image_bytes = f.read()
+    except FileNotFoundError:
+        print(f"❌ Image file '{expected_name}' not found.")
+        sys.exit(1)
+
+    actual_hash = hashlib.sha256(image_bytes).hexdigest()
+    if actual_hash == expected_hash:
+        print("✅ Image SHA-256 hash matches.")
+    else:
+        print(f"❌ Image content hash does not match.\nExpected: {expected_hash}\nFound:    {actual_hash}")
+        sys.exit(1)
+
+# === PR Message Placeholder ===
 def check_pr_message():
     print("TODO: Implement PR message check via GITHUB_EVENT_PATH.")
     sys.exit(0)
 
+# === Lockout Placeholder ===
 def check_lockout():
     print("TODO: Implement winner lockout logic.")
     sys.exit(0)
 
+# === Entry Point ===
 def main():
     if len(sys.argv) < 2:
         print("❌ Usage: python validate.py <check-name>")
@@ -82,8 +141,12 @@ def main():
             check_header_text()
         case "check-header-size":
             check_header_size()
-        case "check-image":
-            check_image_tag()
+        case "check-image-name":
+            check_image_name()
+        case "check-image-link":
+            check_image_link()
+        case "check-image-hash":
+            check_image_hash()
         case "check-pr-message":
             check_pr_message()
         case "check-lockout":
