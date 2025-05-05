@@ -5,10 +5,10 @@ on:
     branches:
       - '**'
 
-
-
 jobs:
   validate-submission:
+    name: Validate PR
+    runs-on: ubuntu-latest
 
     env:
       TARGET_BRANCH: ${{ secrets.CORRECT_BRANCH }}
@@ -20,91 +20,87 @@ jobs:
       LINK_URL: ${{ secrets.CORRECT_LINK_URL }}
       SECRET_PHRASE: ${{ secrets.CORRECT_PHRASE }}
 
-    name: Validate PR
-    runs-on: ubuntu-latest
-
     steps:
       - name: Check out PR branch
         uses: actions/checkout@v3
 
       - name: Validate PR Target Branch
-        if: github.base_ref != env.TARGET_BRANCH
+        if: ${{ github.base_ref != env.TARGET_BRANCH }}
         run: |
           echo "❌ Invalid branch: This is not the correct submission branch."
           exit 1
 
-      #      - name: ✅ Placeholder - Check Background Color
-      #        run: |
-      #          echo "TODO: Validate background color"
-
-      - name: Install pup (HTML parser)
-        run: sudo apt-get update && sudo apt-get install -y pup
+      - name: Install BeautifulSoup4
+        run: pip install beautifulsoup4 lxml
 
       - name: ✅ Check Background Color
         run: |
-          COLOR_FOUND=$(pup 'style text{}' < index.html | grep -Eo 'background-color:\s*#[0-9a-fA-F]{6}' | head -n1 | awk -F: '{print $2}' | xargs)
+          python3 <<'EOF'
+          import sys
+          import os
+          import re
+          from bs4 import BeautifulSoup
+  
+          expected_color = os.environ["BACKGROUND_COLOR"]
 
-          echo "Found background color: $COLOR_FOUND"
-          echo "Expected background color: $BACKGROUND_COLOR"
+          with open("index.html", "r") as f:
+            soup = BeautifulSoup(f, "lxml")
+  
+          style_tags = soup.find_all("style")
+          background_color = None
 
-          if [ "$COLOR_FOUND" != "$BACKGROUND_COLOR" ]; then
-            echo "❌ Background color does not match."
-            exit 1
-          else
-            echo "✅ Background color matches."
-          fi
-      
-      
+          for style in style_tags:
+            match = re.search(r'background-color:\s*(#[0-9a-fA-F]{6})', style.text)
+            if match:
+              background_color = match.group(1)
+              break
 
-      #      - name: ✅ Placeholder - Check Header Tag + Text
-      #        run: |
-      #          echo "TODO: Validate header structure and content"
-
+          print(f"Found background color: {background_color}")
+          print(f"Expected background color: {expected_color}")
+          
+          if background_color != expected_color:
+              print("❌ Background color does not match.")
+              sys.exit(1)
+          else:
+            print("✅ Background color matches.")
+            EOF
 
       - name: ✅ Check Header Tag Level
         run: |
-          TAG_LEVEL=$(pup 'h1,h2,h3,h4,h5,h6 text{}' < index.html | grep -F "$HEADER_TEXT" | sed -E 's/<h([1-6])>.*/\1/' | head -n1)
-
+          TAG_LEVEL=$(pup 'h1,h2,h3,h4,h5,h6' < index.html | grep -B1 "$HEADER_TEXT" | grep -oP '<h\K[1-6](?=>)' | head -n1)
+          
           echo "Found header tag level: h$TAG_LEVEL"
-
-          # Set expected level here OR pull from secret if made available
-          EXPECTED_LEVEL=$HEADER_SIZE
-
-          if [ "$TAG_LEVEL" != "$EXPECTED_LEVEL" ]; then
+          echo "Expected header tag level: h$HEADER_SIZE"
+          
+          if [ "$TAG_LEVEL" != "$HEADER_SIZE" ]; then
             echo "❌ Header tag level is incorrect."
             exit 1
-          else
+          else:
             echo "✅ Header tag level is correct."
           fi
-
 
       - name: ✅ Check Header Text
         run: |
           HEADER_FOUND=$(pup 'h1,h2,h3,h4,h5,h6 text{}' < index.html | grep -F "$HEADER_TEXT" | head -n1)
-
+          
           echo "Looking for header text: $HEADER_TEXT"
           echo "Found header content: $HEADER_FOUND"
-
+          
           if [ "$HEADER_FOUND" != "$HEADER_TEXT" ]; then
             echo "❌ Header text does not match."
             exit 1
-          else
+          else:
             echo "✅ Header text matches."
           fi
 
-
-
-
-
-
       - name: ✅ Placeholder - Validate Image Tag & Link
-        run: |
-          echo "TODO: Validate image name, base64, and wrapping link"
+        run:
+          echo "Validate image name, base64, and wrapping link"
 
       - name: ✅ Placeholder - Check PR Secret Phrase
-        run: |
-          echo "TODO: Validate PR message format"
+        run:
+          echo "Validate PR message format"
 
       - name: ✅ Placeholder - Check Submission Lockout
-        run: |
-          echo "TODO: Lockout if winner already declared"
+        run:
+          echo "Lockout if winner already declared."
