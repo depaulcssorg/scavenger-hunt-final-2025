@@ -31,32 +31,36 @@ def check_background_color():
 def check_header_text():
     soup = load_html()
     expected_text = os.environ["HEADER_TEXT"]
+
     headers = soup.find_all(re.compile(r'h[1-6]'))
     for header in headers:
         if header.get_text(strip=True) == expected_text:
             print("✅ Header text matches.")
-            # Save the tag name for use in header size
-            with open(".header_tag", "w") as f:
-                f.write(header.name)
             return
+
     print("❌ Header text not found.")
     sys.exit(1)
 
-def check_header_size():
-    expected_size = int(os.environ["HEADER_SIZE"])
-    try:
-        with open(".header_tag", "r") as f:
-            tag_name = f.read().strip()
-    except FileNotFoundError:
-        print("❌ Header tag context missing. Run check-header-text first.")
-        sys.exit(1)
 
-    level = int(tag_name[1]) if tag_name.startswith("h") else None
-    if level == expected_size:
-        print("✅ Header size matches.")
-    else:
-        print(f"❌ Header size mismatch. Found: h{level}")
-        sys.exit(1)
+def check_header_size():
+    soup = load_html()
+    expected_text = os.environ["HEADER_TEXT"]
+    expected_size = int(os.environ["HEADER_SIZE"])
+
+    headers = soup.find_all(re.compile(r'h[1-6]'))
+    for header in headers:
+        if header.get_text(strip=True) == expected_text:
+            actual_size = int(header.name[1])
+            if actual_size == expected_size:
+                print("✅ Header size matches.")
+                return
+            else:
+                print(f"❌ Header size mismatch. Found: h{actual_size}")
+                sys.exit(1)
+
+    print("❌ Header text not found.")
+    sys.exit(1)
+
 
 def check_image_tag():
     print("TODO: Implement image tag validation.")
