@@ -36,8 +36,15 @@ jobs:
       - name: ✅ Check Header Tag Level
         run: python3 scripts/validate.py check-header-size
 
-      - name: ✅ Check Image Tag & Link
-        run: python3 scripts/validate.py check-image
+      - name: ✅ Check Image Name
+        run: python3 scripts/validate.py check-image-name
+
+      - name: ✅ Check Image Link
+        run: python3 scripts/validate.py check-image-link
+
+      - name: ✅ Check Image Hash
+        run: python3 scripts/validate.py check-image-hash
+
 
       - name: ✅ Check PR Secret Phrase
         run: python3 scripts/validate.py check-pr-message
