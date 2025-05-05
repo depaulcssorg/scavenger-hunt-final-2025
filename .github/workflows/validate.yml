@@ -102,4 +102,4 @@ jobs:
 
       - name: ✅ Placeholder - Check Submission Lockout
         run:
-          echo "Lockout if winner already declared"
+          echo "Lockout if winner already declared."
