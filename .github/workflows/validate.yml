@@ -27,6 +27,12 @@ jobs:
       - name: Install Python dependencies
         run: pip install beautifulsoup4 lxml
 
+      - name: Debug file tree
+        run: |
+          echo "Files in repo:"
+          find . -type f
+
+
       - name: ✅ Check Background Color
         run: python3 scripts/validate.py check-background
 
