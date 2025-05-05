@@ -35,12 +35,12 @@ jobs:
 
       - name: ✅ Check Background Color
         run: |
-          python3 - "$BACKGROUND_COLOR" <<EOF
+          python3 <<'EOF'
           import sys
           import re
           from bs4 import BeautifulSoup
   
-          expected_color = sys.argv[1]
+          expected_color = os.environ["BACKGROUND_COLOR"]
 
           with open("index.html", "r") as f:
             soup = BeautifulSoup(f, "lxml")
