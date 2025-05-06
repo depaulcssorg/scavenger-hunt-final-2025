@@ -27,38 +27,57 @@ jobs:
       - name: Install Python dependencies
         run: pip install beautifulsoup4 lxml
 
-#      - name: Validate PR Branch
-#        run: python3 scripts/validate.py check-pr-branch
-#
-#      - name: Validate PR Branch
-#        run: python3 scripts/validate.py check-pr-phrase
-
       - name: ✅ Check PR Target Branch
-        run: python3 scripts/validate.py check-branch
+        continue-on-error: true
+        run: |
+          python3 scripts/validate.py check-branch || echo "check-branch FAIL" >> result.log
 
       - name: ✅ Check PR Secret Phrase
-        run: python3 scripts/validate.py check-pr-message
+        continue-on-error: true
+        run: |
+          python3 scripts/validate.py check-pr-message || echo "check-pr-message FAIL" >> result.log
 
       - name: ✅ Check Background Color
-        run: python3 scripts/validate.py check-background
+        continue-on-error: true
+        run: |
+          python3 scripts/validate.py check-background || echo "check-background FAIL" >> result.log
 
       - name: ✅ Check Header Text
-        run: python3 scripts/validate.py check-header-text
+        continue-on-error: true
+        run: |
+          python3 scripts/validate.py check-header-text || echo "check-header-text FAIL" >> result.log
 
       - name: ✅ Check Header Tag Level
-        run: python3 scripts/validate.py check-header-size
+        continue-on-error: true
+        run: |
+          python3 scripts/validate.py check-header-size || echo "check-header-size FAIL" >> result.log
 
       - name: ✅ Check Image Name
-        run: python3 scripts/validate.py check-image-name
+        continue-on-error: true
+        run: |
+          python3 scripts/validate.py check-image-name || echo "check-image-name FAIL" >> result.log
 
       - name: ✅ Check Image Link
-        run: python3 scripts/validate.py check-image-link
+        continue-on-error: true
+        run: |
+          python3 scripts/validate.py check-image-link || echo "check-image-link FAIL" >> result.log
 
       - name: ✅ Check Image Hash
-        run: python3 scripts/validate.py check-image-hash
-
-
-
+        continue-on-error: true
+        run: |
+          python3 scripts/validate.py check-image-hash || echo "check-image-hash FAIL" >> result.log
 
       - name: ✅ Check Submission Lockout
-        run: python3 scripts/validate.py check-lockout
+        continue-on-error: true
+        run: |
+          python3 scripts/validate.py check-lockout || echo "check-lockout FAIL" >> result.log
+
+      - name: ❌ Final Merge Blocker
+        run: |
+          if [ -f result.log ]; then
+            echo "❌ One or more checks failed:"
+            cat result.log
+            exit 1
+          else
+            echo "✅ All checks passed."
+          fi
