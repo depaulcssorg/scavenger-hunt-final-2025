@@ -9,6 +9,7 @@ jobs:
   validate-submission:
     name: Validate PR
     runs-on: ubuntu-latest
+    environment: production  # Required to access environment variable WINNER_LOCKED
 
     env:
       TARGET_BRANCH: ${{ secrets.CORRECT_BRANCH }}
@@ -27,52 +28,49 @@ jobs:
       - name: Install Python dependencies
         run: pip install beautifulsoup4 lxml
 
-      - name: ✅ Check PR Target Branch
-        continue-on-error: true
-        run: |
-          python3 scripts/validate.py check-branch || echo "check-branch FAIL" >> result.log
-
-      - name: ✅ Check PR Secret Phrase
-        continue-on-error: true
-        run: |
-          python3 scripts/validate.py check-pr-message || echo "check-pr-message FAIL" >> result.log
-
-      - name: ✅ Check Background Color
-        continue-on-error: true
-        run: |
-          python3 scripts/validate.py check-background || echo "check-background FAIL" >> result.log
-
-      - name: ✅ Check Header Text
-        continue-on-error: true
-        run: |
-          python3 scripts/validate.py check-header-text || echo "check-header-text FAIL" >> result.log
-
-      - name: ✅ Check Header Tag Level
-        continue-on-error: true
-        run: |
-          python3 scripts/validate.py check-header-size || echo "check-header-size FAIL" >> result.log
-
-      - name: ✅ Check Image Name
-        continue-on-error: true
-        run: |
-          python3 scripts/validate.py check-image-name || echo "check-image-name FAIL" >> result.log
-
-      - name: ✅ Check Image Link
-        continue-on-error: true
-        run: |
-          python3 scripts/validate.py check-image-link || echo "check-image-link FAIL" >> result.log
-
-      - name: ✅ Check Image Hash
-        continue-on-error: true
-        run: |
-          python3 scripts/validate.py check-image-hash || echo "check-image-hash FAIL" >> result.log
-
       - name: ✅ Check Submission Lockout
         continue-on-error: true
         run: |
-          python3 scripts/validate.py check-lockout || echo "check-lockout FAIL" >> result.log
+          if [ "${{ vars.WINNER_LOCKED }}" == "true" ]; then
+            echo "❌ A winner has already been declared. Submissions are closed."
+            echo "check-lockout FAIL" >> result.log
+          else
+            echo "✅ Submission window is open."
+          fi
 
-      - name: ❌ Final Merge Blocker
+      - name: ✅ Check PR Target Branch
+        continue-on-error: true
+        run: python3 scripts/validate.py check-branch || echo "check-branch FAIL" >> result.log
+
+      - name: ✅ Check PR Secret Phrase
+        continue-on-error: true
+        run: python3 scripts/validate.py check-pr-message || echo "check-pr-message FAIL" >> result.log
+
+      - name: ✅ Check Background Color
+        continue-on-error: true
+        run: python3 scripts/validate.py check-background || echo "check-background FAIL" >> result.log
+
+      - name: ✅ Check Header Text
+        continue-on-error: true
+        run: python3 scripts/validate.py check-header-text || echo "check-header-text FAIL" >> result.log
+
+      - name: ✅ Check Header Tag Level
+        continue-on-error: true
+        run: python3 scripts/validate.py check-header-size || echo "check-header-size FAIL" >> result.log
+
+      - name: ✅ Check Image Name
+        continue-on-error: true
+        run: python3 scripts/validate.py check-image-name || echo "check-image-name FAIL" >> result.log
+
+      - name: ✅ Check Image Link
+        continue-on-error: true
+        run: python3 scripts/validate.py check-image-link || echo "check-image-link FAIL" >> result.log
+
+      - name: ✅ Check Image Hash
+        continue-on-error: true
+        run: python3 scripts/validate.py check-image-hash || echo "check-image-hash FAIL" >> result.log
+
+      - name: ❌ Final Merge Gate
         run: |
           if [ -f result.log ]; then
             echo "❌ One or more checks failed:"
@@ -81,3 +79,16 @@ jobs:
           else
             echo "✅ All checks passed."
           fi
+
+      - name: 🔒 Lock Submissions After Success
+        if: success()
+        run: |
+          echo "🔐 Setting WINNER_LOCKED = true"
+          gh api \
+            -X PATCH \
+            -H "Accept: application/vnd.github+json" \
+            /repos/${{ github.repository }}/environments/production/variables/WINNER_LOCKED \
+            -f name='WINNER_LOCKED' \
+            -f value='true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
