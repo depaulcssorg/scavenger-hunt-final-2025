@@ -2,6 +2,7 @@ import os
 import sys
 import re
 import hashlib
+import json
 from bs4 import BeautifulSoup
 
 def load_html(path="index.html"):
@@ -11,6 +12,29 @@ def load_html(path="index.html"):
     except FileNotFoundError:
         print("❌ index.html not found.")
         sys.exit(1)
+
+
+
+def check_target_branch():
+    expected_branch = os.environ["TARGET_BRANCH"]
+    event_path = os.environ.get("GITHUB_EVENT_PATH")
+
+    try:
+        with open(event_path, "r") as f:
+            event = json.load(f)
+            actual_branch = event.get("pull_request", {}).get("base", {}).get("ref")
+    except Exception as e:
+        print(f"❌ Failed to read GitHub event data: {e}")
+        sys.exit(1)
+
+    if actual_branch == expected_branch:
+        print("✅ PR targets the correct branch.")
+    else:
+        print(f"❌ PR targets the wrong branch: {actual_branch} (expected: {expected_branch})")
+        sys.exit(1)
+
+
+
 
 # === Background Color ===
 def check_background_color():
@@ -135,6 +159,8 @@ def main():
         sys.exit(1)
 
     match sys.argv[1]:
+        case "check-branch":
+            check_target_branch()
         case "check-background":
             check_background_color()
         case "check-header-text":

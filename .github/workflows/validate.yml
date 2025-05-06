@@ -27,6 +27,15 @@ jobs:
       - name: Install Python dependencies
         run: pip install beautifulsoup4 lxml
 
+#      - name: Validate PR Branch
+#        run: python3 scripts/validate.py check-pr-branch
+#
+#      - name: Validate PR Branch
+#        run: python3 scripts/validate.py check-pr-phrase
+
+      - name: ✅ Check PR Target Branch
+        run: python3 scripts/validate.py check-branch
+
       - name: ✅ Check Background Color
         run: python3 scripts/validate.py check-background
 
