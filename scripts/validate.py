@@ -144,8 +144,26 @@ def check_image_hash():
 
 # === PR Message Placeholder ===
 def check_pr_message():
-    print("TODO: Implement PR message check via GITHUB_EVENT_PATH.")
-    sys.exit(0)
+    expected_phrase = os.environ["SECRET_PHRASE"]
+    event_path = os.environ.get("GITHUB_EVENT_PATH")
+
+    if not event_path:
+        print("❌ GITHUB_EVENT_PATH not set.")
+        sys.exit(1)
+
+    try:
+        with open(event_path, "r") as f:
+            event = json.load(f)
+            pr_body = event.get("pull_request", {}).get("body", "")
+    except Exception as e:
+        print(f"❌ Failed to load PR body: {e}")
+        sys.exit(1)
+
+    if expected_phrase in pr_body:
+        print("✅ PR message contains the correct secret phrase.")
+    else:
+        print("❌ PR message does not contain the correct secret phrase.")
+        sys.exit(1)
 
 # === Lockout Placeholder ===
 def check_lockout():

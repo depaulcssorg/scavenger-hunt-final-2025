@@ -36,6 +36,9 @@ jobs:
       - name: ✅ Check PR Target Branch
         run: python3 scripts/validate.py check-branch
 
+      - name: ✅ Check PR Secret Phrase
+        run: python3 scripts/validate.py check-pr-message
+
       - name: ✅ Check Background Color
         run: python3 scripts/validate.py check-background
 
@@ -55,8 +58,7 @@ jobs:
         run: python3 scripts/validate.py check-image-hash
 
 
-      - name: ✅ Check PR Secret Phrase
-        run: python3 scripts/validate.py check-pr-message
+
 
       - name: ✅ Check Submission Lockout
         run: python3 scripts/validate.py check-lockout
