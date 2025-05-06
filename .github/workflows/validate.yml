@@ -9,7 +9,7 @@ jobs:
   validate-submission:
     name: Validate PR
     runs-on: ubuntu-latest
-    environment: production  # Required to access environment variable WINNER_LOCKED
+    environment: production  # Required to access WINNER_LOCKED
 
     env:
       TARGET_BRANCH: ${{ secrets.CORRECT_BRANCH }}
@@ -20,12 +20,13 @@ jobs:
       IMAGE_NAME: ${{ secrets.CORRECT_IMAGE_NAME }}
       LINK_URL: ${{ secrets.CORRECT_LINK_URL }}
       SECRET_PHRASE: ${{ secrets.CORRECT_PHRASE }}
+      GH_TOKEN: ${{ secrets.PAT_FOR_ENV_UPDATE }}
 
     steps:
-      - name: Check out PR branch
+      - name: 📥 Check out PR branch
         uses: actions/checkout@v3
 
-      - name: Install Python dependencies
+      - name: 🧪 Install Python dependencies
         run: pip install beautifulsoup4 lxml
 
       - name: ✅ Check Submission Lockout
@@ -91,4 +92,4 @@ jobs:
             -f name='WINNER_LOCKED' \
             -f value='true'
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PAT_FOR_ENV_UPDATE }}
