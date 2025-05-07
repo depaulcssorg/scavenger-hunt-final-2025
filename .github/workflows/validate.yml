@@ -1,7 +1,7 @@
 name: Validate Final Submission
 
 on:
-  pull_request:
+  pull_request_target:
     branches:
       - '**'
 
@@ -17,6 +17,9 @@ jobs:
     steps:
       - name: 📥 Check out PR branch
         uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
 
 #      - name: 🔐 Load validation hashes
 #        run: |
