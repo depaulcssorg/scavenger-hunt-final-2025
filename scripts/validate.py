@@ -5,7 +5,9 @@ import hashlib
 import json
 from bs4 import BeautifulSoup
 
-HASH_FILE = "hashes.json"
+# HASH_FILE = "hashes.json"
+HASH_FILE = os.path.join(os.path.dirname(__file__), "hashes.json")
+
 
 def load_html(path="index.html"):
     try:
