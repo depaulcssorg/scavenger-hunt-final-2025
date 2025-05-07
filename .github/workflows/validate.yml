@@ -11,6 +11,9 @@ jobs:
     runs-on: ubuntu-latest
     environment: production  # Required to access WINNER_LOCKED
 
+
+
+
     steps:
       - name: 📥 Check out PR branch
         uses: actions/checkout@v3
@@ -86,4 +89,5 @@ jobs:
             -f name='WINNER_LOCKED' \
             -f value='true'
         env:
-          GH_TOKEN: ${{ secrets.PAT_FOR_ENV_UPDATE }}
+#          GH_TOKEN: ${{ secrets.PAT_FOR_ENV_UPDATE }}
+          GH_TOKEN: ${{ github.token }}
