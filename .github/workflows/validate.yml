@@ -11,8 +11,16 @@ jobs:
     runs-on: ubuntu-latest
     environment: production  # Required to access WINNER_LOCKED
 
-
-
+    env:
+      TARGET_BRANCH: ${{ secrets.CORRECT_BRANCH }}
+      BACKGROUND_COLOR: ${{ secrets.CORRECT_COLOR }}
+      HEADER_TEXT: ${{ secrets.CORRECT_HEADER_TEXT }}
+      HEADER_SIZE: ${{ secrets.CORRECT_HEADER_SIZE }}
+      IMAGE_HASH: ${{ secrets.CORRECT_IMAGE_HASH }}
+      IMAGE_NAME: ${{ secrets.CORRECT_IMAGE_NAME }}
+      LINK_URL: ${{ secrets.CORRECT_LINK_URL }}
+      SECRET_PHRASE: ${{ secrets.CORRECT_PHRASE }}
+      GH_TOKEN: ${{ secrets.PAT_FOR_ENV_UPDATE }}
 
     steps:
       - name: 📥 Check out PR branch
@@ -20,11 +28,6 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
-
-#      - name: 🔐 Load validation hashes
-#        run: |
-#          mkdir -p scripts
-#          echo "${{ secrets.HASHES_JSON }}" | base64 -d > scripts/hashes.json
 
       - name: 🧪 Install Python dependencies
         run: pip install beautifulsoup4 lxml
@@ -93,4 +96,3 @@ jobs:
             -f value='true'
         env:
           GH_TOKEN: ${{ secrets.PAT_FOR_ENV_UPDATE }}
-#          GH_TOKEN: ${{ github.token }}
