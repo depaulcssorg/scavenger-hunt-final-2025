@@ -11,20 +11,14 @@ jobs:
     runs-on: ubuntu-latest
     environment: production  # Required to access WINNER_LOCKED
 
-    env:
-      TARGET_BRANCH: ${{ vars.CORRECT_BRANCH }}
-      BACKGROUND_COLOR: ${{ vars.CORRECT_COLOR }}
-      HEADER_TEXT: ${{ vars.CORRECT_HEADER_TEXT }}
-      HEADER_SIZE: ${{ vars.CORRECT_HEADER_SIZE }}
-      IMAGE_HASH: ${{ vars.CORRECT_IMAGE_HASH }}
-      IMAGE_NAME: ${{ vars.CORRECT_IMAGE_NAME }}
-      LINK_URL: ${{ vars.CORRECT_LINK_URL }}
-      SECRET_PHRASE: ${{ vars.CORRECT_PHRASE }}
-      GH_TOKEN: ${{ secrets.PAT_FOR_ENV_UPDATE }}
-
     steps:
       - name: 📥 Check out PR branch
         uses: actions/checkout@v3
+
+      - name: 🔐 Load validation hashes
+        run: |
+          mkdir -p scripts
+          echo "${{ secrets.HASHES_JSON }}" | base64 -d > scripts/hashes.json
 
       - name: 🧪 Install Python dependencies
         run: pip install beautifulsoup4 lxml
