@@ -12,14 +12,14 @@ jobs:
     environment: production  # Required to access WINNER_LOCKED
 
     env:
-      TARGET_BRANCH: ${{ secrets.CORRECT_BRANCH }}
-      BACKGROUND_COLOR: ${{ secrets.CORRECT_COLOR }}
-      HEADER_TEXT: ${{ secrets.CORRECT_HEADER_TEXT }}
-      HEADER_SIZE: ${{ secrets.CORRECT_HEADER_SIZE }}
-      IMAGE_HASH: ${{ secrets.CORRECT_IMAGE_HASH }}
-      IMAGE_NAME: ${{ secrets.CORRECT_IMAGE_NAME }}
-      LINK_URL: ${{ secrets.CORRECT_LINK_URL }}
-      SECRET_PHRASE: ${{ secrets.CORRECT_PHRASE }}
+      TARGET_BRANCH: ${{ vars.CORRECT_BRANCH }}
+      BACKGROUND_COLOR: ${{ vars.CORRECT_COLOR }}
+      HEADER_TEXT: ${{ vars.CORRECT_HEADER_TEXT }}
+      HEADER_SIZE: ${{ vars.CORRECT_HEADER_SIZE }}
+      IMAGE_HASH: ${{ vars.CORRECT_IMAGE_HASH }}
+      IMAGE_NAME: ${{ vars.CORRECT_IMAGE_NAME }}
+      LINK_URL: ${{ vars.CORRECT_LINK_URL }}
+      SECRET_PHRASE: ${{ vars.CORRECT_PHRASE }}
       GH_TOKEN: ${{ secrets.PAT_FOR_ENV_UPDATE }}
 
     steps:
