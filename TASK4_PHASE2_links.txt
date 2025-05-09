@@ -1,0 +1,11 @@
+
+[
+  "https://www.stackoverflow.com",
+  "https://www.arxiv.org",
+  "https://www.opensource.guide",
+  "https://www.geeksforgeeks.org",
+  "https://www.turing.ac.uk",
+  "https://www.wolframalpha.com",
+  "https://www.acm.org",
+  "https://www.kernel.org"
+]
